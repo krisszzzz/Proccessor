@@ -163,7 +163,7 @@ int AsmFileCtor(asm_file* to_ctor, const char* source_name)
 	file_ready_name	 			  = strcat(file_ready_name, ".bin");
 	struct stat binary_file_info  = {};
 	stat(file_ready_name, &binary_file_info);
-
+ 
 	if(to_ctor->info.st_mtime < binary_file_info.st_mtime)	{
 		PrintToLog("Already compilated file: file name --> %s\n", source_name);
 		PrintToLog("source modification time: %ld, last Asm time: %ld\n", to_ctor->info.st_mtime,
