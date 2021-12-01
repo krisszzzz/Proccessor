@@ -29,8 +29,8 @@ struct cpu_bin_file {
 	struct stat* 	 info;							
 	stack_double	 stack;
 	const  char* 	 file_name;						
-	int*			 code;
-	size_t			 code_size;
+	int*		 code;
+	size_t		 code_size;
 	ON_DEBUG(										
 	unsigned __int64 hash;							
 	)												
