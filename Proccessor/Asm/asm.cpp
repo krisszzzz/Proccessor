@@ -333,7 +333,7 @@ int AssembleCmd(asm_file* to_Assemble)
     }
     if(to_Assemble->strings_num == 0 || to_Assemble->strings == nullptr) {
         __PRINT_ALL_INFO__("You source file is empty, or probably you forgot "
-						   "to use MakeStringsForAsmFile() function\n");
+			    "to use MakeStringsForAsmFile() function\n");
         return ASM_ERROR;
     }
 
@@ -343,84 +343,83 @@ int AssembleCmd(asm_file* to_Assemble)
 	)
 
 	
-	int 		  ip 				    = 0;
-	char    	  cmd[MAX_CMD_SIZE + 1] = {0};
+    int           ip 		        = 0;
+    char    	  cmd[MAX_CMD_SIZE + 1] = {0};
     int     	  cmd_code              = 0;
     int     	  command_length        = 0;
-    double  	  arg           	    = 0; 
+    double  	  arg                   = 0; 
     int     	  mem_address           = 0;
     int     	  with_double_arg       = 0;
     int     	  with_mem_treatment    = 0;
-	int     	  with_reg_treatment    = 0;
-	int    	      with_label_treatment  = 0;
+    int     	  with_reg_treatment    = 0;
+    int    	  with_label_treatment  = 0;
     int     	  second_arg_begin      = 0;
-	int     	  reg_code 	            = 0;		// NORMAL REGISTER SIZE IS 2
-	char*   	  reg_name     	        = (char*)calloc(REG_NAME_LENGTH + 1, sizeof(char));
-	int     	  label_code	        = 0;
-	static label* labels		        = nullptr;
+    int     	  reg_code 	        = 0;		// NORMAL REGISTER SIZE IS 2
+    char*   	  reg_name     	        = (char*)calloc(REG_NAME_LENGTH + 1, sizeof(char));
+    int     	  label_code	        = 0;
+    static label* labels		= nullptr;
 
-	if(num_of_assemblations == 1) {
-		labels = LabelsInit();
-	}
+    if(num_of_assemblations == 1) {
+	labels = LabelsInit();
+    }
 
-	for(size_t iter_count = 0; iter_count < to_Assemble->strings_num; ++iter_count)
+    for(size_t iter_count = 0; iter_count < to_Assemble->strings_num; ++iter_count)
     {
-		///Working with comments
+	///Working with comments
 		
-		char* comment_section_begin = strchr(to_Assemble->strings[iter_count].line, ';');
-		if(comment_section_begin != nullptr) {
-			*comment_section_begin = '\0';
-		}
+	char* comment_section_begin = strchr(to_Assemble->strings[iter_count].line, ';');	
+	if(comment_section_begin != nullptr) {
+	    *comment_section_begin = '\0';
+	}
 		
         if(*to_Assemble->strings[iter_count].line == '\0') {
-			continue;
-		}
+            continue;
+	}
 		
-
 		/// Check for labels
-		if(sscanf(to_Assemble->strings[iter_count].line, ":%d", &label_code) == 1) {
-			if(num_of_assemblations == 1) {
-				AddLabel(labels, label_code, ip);
-			}
-			continue;
-		}
-		/// Get cmd  
-		sscanf(to_Assemble->strings[iter_count].line, "%s %n", cmd, &command_length);
+	if(sscanf(to_Assemble->strings[iter_count].line, ":%d", &label_code) == 1) {
+	    if(num_of_assemblations == 1) {
+		AddLabel(labels, label_code, ip);
+	    }
+	    continue;
+	}
+	/// Get cmd  
+	sscanf(to_Assemble->strings[iter_count].line, "%s %n", cmd, &command_length);
 
-		if(command_length >= MAX_CMD_SIZE) {
-			__PRINT_ALL_INFO__("The command too long, don't use the commands, that longer than %d\n",
-							   command_length);
-			return ASM_ERROR;
-		}
-		cmd_code = CompareCommands(cmd, command_length, &with_double_arg,      &with_mem_treatment, 
-														&with_label_treatment, &with_reg_treatment);
+	if(command_length >= MAX_CMD_SIZE) {
+	     __PRINT_ALL_INFO__("The command too long, don't use the commands, that longer than %d\n",
+	   	    	        command_length);
+	     return ASM_ERROR;
+	}
+	cmd_code = CompareCommands(cmd, command_length, &with_double_arg,      &with_mem_treatment,	
+				                        &with_label_treatment, &with_reg_treatment);
 
-		/// Check cmd 
-		if(cmd_code == ERROR_CMD) {
-			__PRINT_ALL_INFO__("Inccorect command, please see the instruction, where all commands showed\n"
-							   "Your input: %s, line number %llu\n", cmd, iter_count + 1);
+	/// Check cmd 
+	if(cmd_code == ERROR_CMD) {
+	      __PRINT_ALL_INFO__("Inccorect command, please see the instruction, where all commands showed\n"
+				 "Your input: %s, line number %llu\n", cmd, iter_count + 1);
             return ASM_ERROR;
-		}
-		/// Format, when you have to use RAM or Videomemory
-		/// Working with RAM and Video memory
+	}
+	/// Format, when you have to use RAM or Videomemory
+	/// Working with RAM and Video memory
         if( with_mem_treatment && 
-			sscanf(to_Assemble->strings[iter_count].line + command_length, "[%d] %n", &mem_address, &second_arg_begin) == 1) { 		
+	    sscanf(to_Assemble->strings[iter_count].line + command_length, "[%d] %n", &mem_address, &second_arg_begin) == 1) { 		
 
-			if(MemProccessing(to_Assemble, cmd, &cmd_code, &iter_count, &num_of_assemblations, &mem_address,
-							  &ip, &command_length, &second_arg_begin) == ASM_ERROR) {
-				return ASM_ERROR;
-			}							   
-			continue;
-		/// Format when you have to use registers
-		/// Working with registers		 
+	    if(MemProccessing(to_Assemble, cmd, &cmd_code, &iter_count, &num_of_assemblations, &mem_address,
+	  		                                   &ip,         &command_length,       &second_arg_begin) == ASM_ERROR) {
+		return ASM_ERROR;
+	    }							   
+	    сontinue;
+	/// Format when you have to use registers
+	/// Working with registers		 
         } else if( with_reg_treatment &&
-				   sscanf(to_Assemble->strings[iter_count].line + command_length, "%2s",  reg_name) == 1 &&
-				  (sscanf(to_Assemble->strings[iter_count].line + command_length, "%lg",   &arg) 	== 0 &&
-				   sscanf(to_Assemble->strings[iter_count].line + command_length, ":%lg",  &arg) 	== 0) ) {
+		   sscanf(to_Assemble->strings[iter_count].line + command_length, "%2s",  reg_name) == 1 &&
+		   (sscanf(to_Assemble->strings[iter_count].line + command_length, "%lg",   &arg)   == 0 &&
+		    sscanf(to_Assemble->strings[iter_count].line + command_length, ":%lg",  &arg)   == 0) ) {
 			  
 			if(RegProccessing (to_Assemble, cmd, 	   &cmd_code, &iter_count, &ip,
-				    		   &reg_code,   reg_name, &num_of_assemblations) == ASM_ERROR) {
-				return ASM_ERROR;				   	
+				                                   &reg_code, reg_name,    &num_of_assemblations) == ASM_ERROR) {
+			    return ASM_ERROR;				   	
 			}
 
 			continue;
@@ -429,25 +428,23 @@ int AssembleCmd(asm_file* to_Assemble)
 		} else if(with_label_treatment && sscanf(to_Assemble->strings[iter_count].line + command_length, 
 												 ":%d", &label_code) == 1) {  
 																				
-			LabelProccessing(to_Assemble, &cmd_code, labels, &label_code, &ip, &num_of_assemblations);
-			continue;
+		    LabelProccessing(to_Assemble, &cmd_code, labels, &label_code, &ip, &num_of_assemblations);
+		    continue;
 		} 
 		/// Default (without arguments) commands proccessing
-		DefaultCmdProccessing(to_Assemble, cmd, &cmd_code, &arg, &with_double_arg,
-							  &num_of_assemblations, &command_length, &ip,
-							  &iter_count);
-    }
+		DefaultCmdProccessing(to_Assemble,          cmd,             &cmd_code, &arg,        &with_double_arg,
+				     &num_of_assemblations, &command_length, &ip,       &iter_count);
+       }
 
-	if(num_of_assemblations == 1) {
-		AssembleCmd(to_Assemble);
-	}
+       if(num_of_assemblations == 1) {
+           AssembleCmd(to_Assemble);
+       }
 	
     return 0;
 }
 
-static int MemProccessing (asm_file* to_Assemble,     char* cmd,         int* cmd_code, size_t* iter_count,
-						   int* num_of_assemblations, int*  mem_address, int* ip,       int*    command_length,
-						   int* second_arg_begin) 
+static int MemProccessing (asm_file* to_Assemble,  сhar* cmd, int* cmd_code,       size_t* iter_count,      int*  num_of_assemblations, 
+			   int*      mem_address,  int*  ip,  int* command_length, int*    second_arg_begin) 
 {	
 	/// using binary operations, to label the new code, if push/pop used with RAM treatment
 	/// Only for video (if you want use the videomemory you should pass the address above or equal to 1000 - 7):
@@ -488,20 +485,19 @@ static int MemProccessing (asm_file* to_Assemble,     char* cmd,         int* cm
 			}																											 
 																													 
 		} else {																										 
-    		int by_default_pixel_type = '.';															        		 
-			if(*num_of_assemblations == 2) {																				 
-        		fwrite(&by_default_pixel_type, sizeof(int), 1, 														     
-					   (*(binary_file*)to_Assemble->binary_file).bin_file); 	 										 
-			}																											 
-			*ip += 1;
+    		    int by_default_pixel_type = '.';															        		 
+		    if(*num_of_assemblations == 2) {																				 
+                        fwrite(&by_default_pixel_type, sizeof(int), 1, (*(binary_file*)to_Assemble->binary_file).bin_file); 	 										 
+		    }																											 
+		    *ip += 1;
 		} 																												 
 	}																													 
 	return 0;
 }
 
-static int  RegProccessing (asm_file* to_Assemble,    char* cmd,  	   int* cmd_code, 
-			   			 	size_t*   iter_count,     int*  ip,        int*  reg_code, 
-					 		char* 	  reg_name,   	  int* num_of_assemblations) {																				
+static int  RegProccessing (asm_file* to_Assemble, char* cmd,                 int* cmd_code, 
+			    size_t*   iter_count,  int*  ip,   	 	      int*  reg_code, 
+			    char*     reg_name,    int*  num_of_assemblations) {																				
 	if((*reg_code = RegisterChecker(reg_name)) != 0) {														
 		*cmd_code |= 0x60;           																		
 		if(*num_of_assemblations == 2) {																		
@@ -518,7 +514,7 @@ static int  RegProccessing (asm_file* to_Assemble,    char* cmd,  	   int* cmd_c
 }																				
 
 static void LabelProccessing(asm_file* to_Assemble, int* cmd_code, label* labels,  
-							 int* 	   label_code,  int* ip, 	   int*   num_of_assemblations)	 
+			     int*      label_code,  int* ip, 	   int*   num_of_assemblations)	 
 {
 	//Rework to check if is no labels
 	int index = GetLabelIndex(labels, *label_code);																		
@@ -531,8 +527,8 @@ static void LabelProccessing(asm_file* to_Assemble, int* cmd_code, label* labels
 }																		
 
 static int DefaultCmdProccessing(asm_file* to_Assemble, char* cmd, 	            int*    cmd_code, 
-								 double* arg,   	    int*  with_double_arg,  int*    num_of_assemblations,
-								 int* command_length,   int*  ip,               size_t* iter_count)												
+				 double*   arg,   	int*  with_double_arg,      int*    num_of_assemblations,
+		                 int* command_length,   int*  ip,                   size_t* iter_count)												
 {
 	if(*num_of_assemblations == 2) {    
         	fwrite(cmd_code,   sizeof(int),  1, (*(binary_file*)to_Assemble->binary_file).bin_file);
